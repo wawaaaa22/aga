@@ -259,10 +259,10 @@ end
   })
   
    local Slider = MiscTab:CreateSlider({
-      Name = "Walkspeed",
+      Name = "WalkSpeed",
       Range = {16, 1000},
       Increment = 1,
-      Suffix = "Walkspeed",
+      Suffix = "WalkSpeed",
       CurrentValue = 16,
       Flag = "Slider1",
       Callback = function(v)
