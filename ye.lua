@@ -1,3 +1,14 @@
+local Ctrl_click_tp = false
+local plrs = game:GetService'Players'
+local plr = plrs.LocalPlayer
+local mouse = plr:GetMouse()
+local rep = game:GetService'ReplicatedStorage'
+local uis = game:GetService'UserInputService'
+local ts = game:GetService'TweenService'
+local rs = game:GetService'RunService'.RenderStepped
+local tps = game:GetService("TeleportService")
+
+-- Library UI
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
   
 local Window = Rayfield:CreateWindow({
@@ -289,6 +300,7 @@ end
       Name = "discord: lildr.ghill"
   })
 
+-- Script + Functions
 local Ctrl_click_tp = false
 local plrs = game:GetService'Players'
 local plr = plrs.LocalPlayer
