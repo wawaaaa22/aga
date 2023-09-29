@@ -1,13 +1,3 @@
-local Ctrl_click_tp = false
-local plrs = game:GetService'Players'
-local plr = plrs.LocalPlayer
-local mouse = plr:GetMouse()
-local rep = game:GetService'ReplicatedStorage'
-local uis = game:GetService'UserInputService'
-local ts = game:GetService'TweenService'
-local rs = game:GetService'RunService'.RenderStepped
-local tps = game:GetService("TeleportService")
-
 -- Library UI
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
   
@@ -37,27 +27,82 @@ local Window = Rayfield:CreateWindow({
    }
 })   
 
+Rayfield:Notify({
+   Title = "JOIN MY DISCORD https://discord.gg/yuMtEkURKM",
+   Content = "ENJOY THE SCRIPT! (my discord: lildr.ghill)",
+   Duration = 30,
+   Image = 4483362458,
+   Actions = { -- Notification Buttons
+      Ignore = {
+         Name = "I GOT U BLUD STFU",
+         Callback = function()
+         print("I GOT UR ASS HACKED!! kiss my ass, mwa <3")
+      end
+   },
+},
+})
+
+-- Local values
+local Ctrl_click_tp = false
+local plrs = game:GetService'Players'
+local plr = plrs.LocalPlayer
+local mouse = plr:GetMouse()
+local rep = game:GetService'ReplicatedStorage'
+local uis = game:GetService'UserInputService'
+local ts = game:GetService'TweenService'
+local rs = game:GetService'RunService'.RenderStepped
+local tps = game:GetService("TeleportService")
+local plrsTable = {}
+
+for i,v in pairs(plrs:GetChildren()) do
+    table.insert(plrsTable, v.DisplayName)
+end
+
+-- Values
+_G.Drop = true
+
+-- Functions
+
+function dropKnife()
+while _G.Drop == true do
+    plr.Character:FindFirstChild("Throwing Knife"):FindFirstChild("Model"):FindFirstChild("Primary"):Destroy()
+    wait(1)
+    end
+   end 
+
+-- Tabs
+
   local MainTab = Window:CreateTab("Main")
   local Section = MainTab:CreateSection("Main Functions")
-  
-  local Button2 = MainTab:CreateButton({
-      Name = "Lock Nearest (Q)",
-  })
-  local Button3 = MainTab:CreateButton({
-      Name = "TP to target (T)",
-  })
-  local Button4 = MainTab:CreateButton({
-      Name = "Hit Locked (Q)",
-  })
-  local Button5 = MainTab:CreateButton({
-      Name = "Sniper Rifle (C)",
-  })
-  local Button6 = MainTab:CreateButton({
-      Name = "AutoVoid (V) USE CHAINSAW",
-  })
-  local Button7 = MainTab:CreateButton({
-      Name = "Throw Knife (F)",
-  })
+
+  local Dropdown2 = MainTab:CreateDropdown({
+      Name = "Lock Target",
+      Options = plrsTable,
+      CurrentOption = {"None"},
+      MultipleOptions = false,
+      Flag = "Dropdown2",
+      Callback = function(value)
+      tar = nil
+        for _,v in pairs(plrs:GetChildren()) do
+            if v.Name == value then
+                local sp = Instance.new('SelectionBox',n_plr.Character.HumanoidRootPart)
+                sp.Name = 'SelectedPlayer'
+                sp.Adornee = n_plr.Character.HumanoidRootPart
+                tar = n_plr
+            end
+        end
+    end
+  })   
+
+  local Toggle3 = MainTab:CreateToggle({
+   Name = "Dropable Throwing Knife",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+   _G.DropTK = Value
+   dropKnife()
+   end,
+})
   
   local MiscTab = Window:CreateTab("Misc")
   local Section2 = MiscTab:CreateSection("Misc Functions")
@@ -257,7 +302,11 @@ end
 )
 end
   })
-  local Slider2 = MiscTab:CreateSlider({
+
+local PlayerTab = Window:CreateTab("Player")
+local Section3 = PlayerTab:CreateSection("Player Functions")
+
+  local Slider2 = PlayerTab:CreateSlider({
       Name = "JumpPower",
       Range = {45, 1000},
       Increment = 1,
@@ -269,7 +318,7 @@ end
       end,
   })
   
-   local Slider = MiscTab:CreateSlider({
+   local Slider = PlayerTab:CreateSlider({
       Name = "WalkSpeed",
       Range = {16, 1000},
       Increment = 1,
@@ -281,7 +330,7 @@ end
       end,
   })
 
-  local Slider3 = MiscTab:CreateSlider({
+  local Slider3 = PlayerTab:CreateSlider({
       Name = "HipHeight",
       Range = {-2, 30},
       Increment = 1,
@@ -293,12 +342,57 @@ end
       end,
   })
 
+  local Controls = Window:CreateTab("Controls")
+local Section4 = Controls:CreateSection("Just Controls")
+
+  local Button2 = Controls:CreateButton({
+      Name = "Lock Nearest (Q)",
+      Callback = function()
+      print("Lock Nearest (Q)")
+   end,
+  })
+  local Button3 = Controls:CreateButton({
+      Name = "TP to target (T)",
+      Callback = function()
+      print("TP to target (T)")
+    end,
+  })
+  local Button4 = Controls:CreateButton({
+      Name = "Hit Locked (Q)",
+      Callback = function()
+      print("Hit Locked (Q)")
+    end,
+  })
+  local Button5 = Controls:CreateButton({
+      Name = "Sniper Rifle (C)",
+      Callback = function()
+      print("Sniper Rifle (C)")
+    end,
+  })
+  local Button6 = Controls:CreateButton({
+      Name = "AutoVoid (V) USE CHAINSAW",
+      Callback = function()
+      print("AutoVoid (V) USE CHAINSAW")
+    end,
+  })
+  local Button7 = Controls:CreateButton({
+      Name = "Throw Knife (F)",
+      Callback = function()
+      print("Throw Knife (F)")
+    end,
+  }) 
+
   local Credits = Window:CreateTab("Credits")
-  local Section3 = Credits:CreateSection("Just Credits")
+  local Section4 = Credits:CreateSection("Just Credits")
   
   local Button = Credits:CreateButton({
-      Name = "discord: lildr.ghill"
+      Name = "discord: lildr.ghill",
+      Callback = function()
+   print("discord: lildr.ghill")
+   end,
   })
+ 
+
 
 -- Script + Functions
 local Ctrl_click_tp = false
@@ -484,7 +578,7 @@ plr:GetMouse().KeyDown:Connect(function(key)
           end
 
 if key == 'f' then
-    plr.Character["Throwing Knife"].RemoteEvent:FireServer(tar.Character.HumanoidRootPart.Position)
+    plr.Character:FindFirstChild("Throwing Knife"):FindFirstChild("RemoteEvent"):FireServer(tar.Character.HumanoidRootPart.Position)
 end
 end
 )
