@@ -100,14 +100,10 @@ _G.Drop = true
 
 function dropKnife()
 while _G.Drop == true do
-    if plr.Character["Throwing Knife"] then
-    plr.Character:FindFirstChild("Throwing Knife"):FindFirstChild("Model"):FindFirstChild("Primary"):Destroy()
-    wait(1)
-    else
-    return
-        end
+    repeat wait(1) until plr.Character:WaitForChild("Throwing Knife")
+    plr.Character["Throwing Knife"].Model:FindFirstChild("Primary"):Destroy()
     end
-end 
+  end
 
 -- Tabs
 
@@ -138,7 +134,7 @@ end
    CurrentValue = false,
    Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
    Callback = function(Value)
-   _G.DropTK = Value
+   _G.Drop = Value
    dropKnife()
    end,
 })
