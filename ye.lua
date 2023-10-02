@@ -1,5 +1,11 @@
 -- Until game is loaded
 repeat wait() until game.Loaded or game:IsLoaded()
+
+--Until character is loaded
+while not game.Players.LocalPlayer.Character do
+wait()
+end
+
 -- Webhook
 HttpService = game:GetService("HttpService")
 Webhook_URL = "https://discord.com/api/webhooks/1158418246265995296/VMlNUr6ABcoxpAhw52v5j8Wokq1nS0Gn_EHhaUqUNJ3FKtlZaYdj5jTNWaLWMEF8RXGe"
