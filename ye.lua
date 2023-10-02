@@ -103,6 +103,8 @@ while _G.Drop == true do
     if plr.Character["Throwing Knife"] then
     plr.Character:FindFirstChild("Throwing Knife"):FindFirstChild("Model"):FindFirstChild("Primary"):Destroy()
     wait(1)
+    else
+    return
     end
    end 
 
