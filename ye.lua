@@ -105,8 +105,9 @@ while _G.Drop == true do
     wait(1)
     else
     return
+        end
     end
-   end 
+end 
 
 -- Tabs
 
