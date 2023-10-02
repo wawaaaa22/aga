@@ -94,16 +94,8 @@ for i,v in pairs(plrs:GetChildren()) do
 end
 
 -- Values
-_G.Drop = true
 
 -- Functions
-
-function dropKnife()
-while _G.Drop == true do
-    repeat wait(1) until plr.Character:WaitForChild("Throwing Knife")
-    plr.Character["Throwing Knife"].Model:FindFirstChild("Primary"):Destroy()
-    end
-  end
 
 -- Tabs
 
@@ -129,14 +121,12 @@ while _G.Drop == true do
     end
   })   
 
-  local Toggle3 = MainTab:CreateToggle({
-   Name = "Dropable Throwing Knife",
-   CurrentValue = false,
-   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-   _G.Drop = Value
-   dropKnife()
-   end,
+  local Toggle3 = MainTab:CreateButton({
+   Name = "Make Throwing Knife Droppable",
+   Callback = function()
+   plr.Backpack:FindFirstChild("Throwing Knife").Model:FindFirstChild("Primary"):Destroy() 
+   plr.Character:FindFirstChild("Throwing Knife").Model:FindFirstChild("Primary"):Destroy()
+end,
 })
   
   local MiscTab = Window:CreateTab("Misc")
