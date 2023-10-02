@@ -1,7 +1,7 @@
 -- Until game is loaded
 repeat wait() until game.Loaded or game:IsLoaded()
 
-print(Game and Character has been fully loaded.)
+print("Game and Character has been fully loaded.")
 
 -- Webhook
 HttpService = game:GetService("HttpService")
