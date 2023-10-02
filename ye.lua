@@ -1,11 +1,6 @@
 -- Until game is loaded
 repeat wait() until game.Loaded or game:IsLoaded()
 
---Until character is loaded
-while not game.Players.LocalPlayer.Character do
-wait()
-end
-
 print(Game and Character has been fully loaded.)
 
 -- Webhook
