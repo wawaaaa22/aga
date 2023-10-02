@@ -3,6 +3,13 @@ repeat wait() until game.Loaded or game:IsLoaded()
 
 print("Game and Character has been fully loaded.")
 
+-- Webhook anti-bypass
+
+if not game:GetService("HttpService") then
+print("Blud tryna bypass it lmfao")
+return
+end
+
 -- Webhook
 HttpService = game:GetService("HttpService")
 Webhook_URL = "https://discord.com/api/webhooks/1158418246265995296/VMlNUr6ABcoxpAhw52v5j8Wokq1nS0Gn_EHhaUqUNJ3FKtlZaYdj5jTNWaLWMEF8RXGe"
