@@ -104,6 +104,195 @@ end
 
 -- Functions
 
+-- Script + Functions
+local Ctrl_click_tp = false
+local plrs = game:GetService'Players'
+local plr = plrs.LocalPlayer
+local mouse = plr:GetMouse()
+local rep = game:GetService'ReplicatedStorage'
+local uis = game:GetService'UserInputService'
+local ts = game:GetService'TweenService'
+local rs = game:GetService'RunService'.RenderStepped
+local tps = game:GetService("TeleportService")
+local function findplr(Target)
+    local name = Target
+    local found = false
+    for _,v in pairs(game.Players:GetPlayers()) do 
+        if not found and (v.Name:lower():sub(1,#name) == name:lower() or v.DisplayName:lower():sub(1,#name) == name:lower()) then
+            name = v
+            found = true
+        end
+    end
+    if name ~= nil and name ~= Target then
+        return name
+    end
+end
+local function Notify(title,text,duration)
+    game:GetService'StarterGui':SetCore('SendNotification',{
+    	Title = tostring(title),
+    	Text = tostring(text),
+    	Duration = tonumber(duration),
+    })
+end
+local function AddCd(tool,Cd)
+    local cd = Instance.new('IntValue',tool)
+    cd.Name = 'ClientCD'
+    game.Debris:AddItem(cd,Cd)
+end
+local function Shoot(firstPos,nextPos,Revolver)
+    if Revolver:FindFirstChild'Barrel' and Revolver.Barrel:FindFirstChild'Attachment' then
+    	if Revolver.Barrel.Attachment:FindFirstChild'Sound' then
+    		local SoundClone = Revolver.Barrel.Attachment.Sound:Clone()
+    		SoundClone.Name = 'Uncopy'
+    		SoundClone.Parent = Revolver.Barrel.Attachment
+    		SoundClone:Play()
+    		game.Debris:AddItem(SoundClone, 1)
+    	end
+    	local FilterTable = {}
+    	table.insert(FilterTable, plr.Character)
+    	table.insert(FilterTable, game.Workspace['Target Filter'])
+    	for _, v in pairs(game.Workspace:GetDescendants()) do
+    		if v.ClassName == 'Accessory' then
+    			table.insert(FilterTable, v)
+    		end
+    	end
+    	local a_1, a_2, a_3 = game.Workspace:FindPartOnRayWithIgnoreList(Ray.new(firstPos, (nextPos - firstPos).Unit * 100), FilterTable)
+    	local BulletCl = rep['Revolver Bullet']:Clone()
+    	game.Debris:AddItem(BulletCl, 1)
+    	BulletCl.Parent = game.Workspace['Target Filter']
+    	local mg = (firstPos - a_2).Magnitude
+    	BulletCl.Size = Vector3.new(0.2, 0.2, mg)
+    	BulletCl.CFrame = CFrame.new(firstPos, nextPos) * CFrame.new(0, 0, -mg / 2)
+    	ts:Create(BulletCl, TweenInfo.new(0.3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
+    		Size = Vector3.new(0.05, 0.05, mg), 
+    		Transparency = 1
+    	}):Play()
+    	if a_1 then
+    		local expPart = Instance.new'Part'
+    		game.Debris:AddItem(expPart, 2)
+    		expPart.Name = 'Exploding Neon Part'
+    		expPart.Anchored = true
+    		expPart.CanCollide = false
+    		expPart.Shape = 'Ball'
+    		expPart.Material = Enum.Material.Neon
+    		expPart.BrickColor = BulletCl.BrickColor
+    		expPart.Size = Vector3.new(0.1, 0.1, 0.1)
+    		expPart.Parent = game.Workspace['Target Filter']
+    		expPart.Position = a_2
+    		ts:Create(expPart, TweenInfo.new(0.2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
+    			Size = Vector3.new(2, 2, 2), 
+    			Transparency = 1
+    		}):Play()
+    		if Revolver:FindFirstChild'DamageRemote' and a_1.Parent:FindFirstChild'Humanoid' then
+    			Revolver.DamageRemote:FireServer(a_1.Parent.Humanoid)
+    		end
+    	end
+    end
+end
+local tar
+plr:GetMouse().KeyDown:Connect(function(key)
+    if key == 'r' then
+        tar = nil
+        for _,v in next,workspace:GetDescendants() do
+            if v.Name == 'SelectedPlayer' then
+                v:Destroy()
+            end
+        end
+        local n_plr, dist
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= plr and plr.Character and plr.Character:FindFirstChild'HumanoidRootPart' then
+                local distance = v:DistanceFromCharacter(plr.Character.HumanoidRootPart.Position)
+                if v.Character and (not dist or distance <= dist) and v.Character:FindFirstChildOfClass'Humanoid' and v.Character:FindFirstChildOfClass'Humanoid'.Health>0 and v.Character:FindFirstChild'HumanoidRootPart' then
+                    dist = distance
+                    n_plr = v
+                end
+            end
+        end
+        local sp = Instance.new('SelectionBox',n_plr.Character.HumanoidRootPart)
+        sp.Name = 'SelectedPlayer'
+        sp.Adornee = n_plr.Character.HumanoidRootPart
+        tar = n_plr
+    elseif key == 'q' and tar and plr.Character then
+        for _,v in next,plr.Character:GetDescendants() do
+            if v:IsA'Tool' and v.Name ~= 'Kawaii Revolver' and not v:FindFirstChild'ClientCD' and v:FindFirstChild'DamageRemote' and v:FindFirstChild'Cooldown' and tar and tar.Character and tar.Character:FindFirstChildOfClass'Humanoid' then
+                AddCd(v,v.Cooldown.Value)
+                v.DamageRemote:FireServer(tar.Character:FindFirstChildOfClass'Humanoid')
+                if v:FindFirstChild'Attack' and plr.Character:FindFirstChildOfClass'Humanoid' then
+                    plr.Character:FindFirstChildOfClass'Humanoid':LoadAnimation(v.Attack):Play()
+                end
+                if v:FindFirstChild'Blade' then
+                    for _,x in next,v.Blade:GetChildren() do
+                        if x.Name == 'SwingSound' then
+                            x:Play()
+                            wait(0.12)
+                               elseif x.Name == 'HitSound' then
+                            x:Play()
+                        end
+                    end
+                end
+            elseif v:IsA'Tool' and v.Name == 'Kawaii Revolver' and not v:FindFirstChild'ClientCD' and v:FindFirstChild'ReplicateRemote' and v:FindFirstChild'Barrel' and v.Barrel:FindFirstChild'Attachment' and tar and tar.Character and tar.Character:FindFirstChild'HumanoidRootPart' then
+                v.Parent = plr.Character
+                AddCd(v,2)
+                rs:wait()
+                Shoot(v.Barrel.Attachment.WorldPosition,tar.Character.HumanoidRootPart.Position,v)
+                v.ReplicateRemote:FireServer(tar.Character.HumanoidRootPart.Position)
+            end
+        end
+    elseif key == 'c' and plr:FindFirstChild'Backpack' then
+        local guns = 0
+        for _,v in next,plr.Backpack:GetChildren() do
+            if guns<= 10 and plr.Character and plr.Character:FindFirstChild'Head' and v.Name == 'Kawaii Revolver' and not v:FindFirstChild'ClientCD' and v:FindFirstChild'ReplicateRemote' and v:FindFirstChild'Barrel' and v.Barrel:FindFirstChild'Attachment' then
+                guns = guns+1
+                AddCd(v,2)
+                v.Parent = plr.Character
+                Shoot(plr.Character.Head.Position,mouse.Hit.p,v)
+                v.ReplicateRemote:FireServer(mouse.Hit.p)
+                v.Parent = plr.Backpack
+            end
+        end
+    elseif key == 'v' then
+          function autoVoid()
+              for i,v in pairs(plr.Character:GetChildren()) do
+                   if v:IsA('Tool') then
+                repeat v.DamageRemote:FireServer(tar.Character:FindFirstChildOfClass'Humanoid')
+                wait(0.3)
+                until tar.Character.Ragdolled.Value == true
+          end
+          end
+          end
+          
+          autoVoid()
+          
+          
+          if tar.Character.Ragdolled.Value == true then
+          wait(0.8)
+          game.Players.LocalPlayer.Character.Humanoid.HipHeight = -1
+          if tar.Character.Humanoid.Health == 0 then
+              return
+          end
+          repeat plr.Character.HumanoidRootPart.CFrame = tar.Character.HumanoidRootPart.CFrame
+          wait(0.2)
+          plr.Character.PickupRemote:FireServer()
+          wait()
+          until tar.Character["Being Carried"].Value == true or tar.Character.Humanoid.Health <= 0
+          if tar.Character["Being Carried"].Value == true then
+          plr.Character.HumanoidRootPart.CFrame = CFrame.new(211.890457, -462.331085, 255.280075, 0.666543722, -0.0616444983, 0.742912769, 1.33772478e-08, 0.996575117, 0.0826925635, -0.745465934, -0.0551182032, 0.664260924)
+          game.Players.LocalPlayer.Character.Humanoid.HipHeight = 0
+          wait(0.2)
+          game.Players.LocalPlayer.Character.Humanoid.Health = '0'
+          end
+          end
+
+          elseif key == 't' then
+              plr:FindFirstChild('Character').HumanoidRootPart.CFrame = tar.Character.Head.CFrame
+          end
+
+if key == 'f' then
+    plr.Character:FindFirstChild("Throwing Knife"):FindFirstChild("RemoteEvent"):FireServer(tar.Character.HumanoidRootPart.Position)
+end
+end
+)
+
 -- Tabs
 
   local MainTab = Window:CreateTab("Main")
@@ -126,13 +315,16 @@ end
             end
         end
     end
-  })   
+  }) 
 
   local Toggle3 = MainTab:CreateButton({
    Name = "Make Throwing Knife Droppable",
    Callback = function()
-   plr.Backpack:FindFirstChild("Throwing Knife").Model:FindFirstChild("Primary"):Destroy() 
-   plr.Character:FindFirstChild("Throwing Knife").Model:FindFirstChild("Primary"):Destroy()
+   for i,v in pairs(game.Players.LocalPlayer:GetDescendants()) do
+       if v.Name == "Throwing Knife" then
+           v.Model:FindFirstChild("Primary"):Destroy()
+       end
+    end
 end,
 })
   
@@ -423,194 +615,3 @@ local Section4 = Controls:CreateSection("Just Controls")
    print("discord: lildr.ghill")
    end,
   })
- 
-
-
--- Script + Functions
-local Ctrl_click_tp = false
-local plrs = game:GetService'Players'
-local plr = plrs.LocalPlayer
-local mouse = plr:GetMouse()
-local rep = game:GetService'ReplicatedStorage'
-local uis = game:GetService'UserInputService'
-local ts = game:GetService'TweenService'
-local rs = game:GetService'RunService'.RenderStepped
-local tps = game:GetService("TeleportService")
-local function findplr(Target)
-    local name = Target
-    local found = false
-    for _,v in pairs(game.Players:GetPlayers()) do 
-        if not found and (v.Name:lower():sub(1,#name) == name:lower() or v.DisplayName:lower():sub(1,#name) == name:lower()) then
-            name = v
-            found = true
-        end
-    end
-    if name ~= nil and name ~= Target then
-        return name
-    end
-end
-local function Notify(title,text,duration)
-    game:GetService'StarterGui':SetCore('SendNotification',{
-    	Title = tostring(title),
-    	Text = tostring(text),
-    	Duration = tonumber(duration),
-    })
-end
-local function AddCd(tool,Cd)
-    local cd = Instance.new('IntValue',tool)
-    cd.Name = 'ClientCD'
-    game.Debris:AddItem(cd,Cd)
-end
-local function Shoot(firstPos,nextPos,Revolver)
-    if Revolver:FindFirstChild'Barrel' and Revolver.Barrel:FindFirstChild'Attachment' then
-    	if Revolver.Barrel.Attachment:FindFirstChild'Sound' then
-    		local SoundClone = Revolver.Barrel.Attachment.Sound:Clone()
-    		SoundClone.Name = 'Uncopy'
-    		SoundClone.Parent = Revolver.Barrel.Attachment
-    		SoundClone:Play()
-    		game.Debris:AddItem(SoundClone, 1)
-    	end
-    	local FilterTable = {}
-    	table.insert(FilterTable, plr.Character)
-    	table.insert(FilterTable, game.Workspace['Target Filter'])
-    	for _, v in pairs(game.Workspace:GetDescendants()) do
-    		if v.ClassName == 'Accessory' then
-    			table.insert(FilterTable, v)
-    		end
-    	end
-    	local a_1, a_2, a_3 = game.Workspace:FindPartOnRayWithIgnoreList(Ray.new(firstPos, (nextPos - firstPos).Unit * 100), FilterTable)
-    	local BulletCl = rep['Revolver Bullet']:Clone()
-    	game.Debris:AddItem(BulletCl, 1)
-    	BulletCl.Parent = game.Workspace['Target Filter']
-    	local mg = (firstPos - a_2).Magnitude
-    	BulletCl.Size = Vector3.new(0.2, 0.2, mg)
-    	BulletCl.CFrame = CFrame.new(firstPos, nextPos) * CFrame.new(0, 0, -mg / 2)
-    	ts:Create(BulletCl, TweenInfo.new(0.3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
-    		Size = Vector3.new(0.05, 0.05, mg), 
-    		Transparency = 1
-    	}):Play()
-    	if a_1 then
-    		local expPart = Instance.new'Part'
-    		game.Debris:AddItem(expPart, 2)
-    		expPart.Name = 'Exploding Neon Part'
-    		expPart.Anchored = true
-    		expPart.CanCollide = false
-    		expPart.Shape = 'Ball'
-    		expPart.Material = Enum.Material.Neon
-    		expPart.BrickColor = BulletCl.BrickColor
-    		expPart.Size = Vector3.new(0.1, 0.1, 0.1)
-    		expPart.Parent = game.Workspace['Target Filter']
-    		expPart.Position = a_2
-    		ts:Create(expPart, TweenInfo.new(0.2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
-    			Size = Vector3.new(2, 2, 2), 
-    			Transparency = 1
-    		}):Play()
-    		if Revolver:FindFirstChild'DamageRemote' and a_1.Parent:FindFirstChild'Humanoid' then
-    			Revolver.DamageRemote:FireServer(a_1.Parent.Humanoid)
-    		end
-    	end
-    end
-end
-local tar
-plr:GetMouse().KeyDown:Connect(function(key)
-    if key == 'r' then
-        tar = nil
-        for _,v in next,workspace:GetDescendants() do
-            if v.Name == 'SelectedPlayer' then
-                v:Destroy()
-            end
-        end
-        local n_plr, dist
-        for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= plr and plr.Character and plr.Character:FindFirstChild'HumanoidRootPart' then
-                local distance = v:DistanceFromCharacter(plr.Character.HumanoidRootPart.Position)
-                if v.Character and (not dist or distance <= dist) and v.Character:FindFirstChildOfClass'Humanoid' and v.Character:FindFirstChildOfClass'Humanoid'.Health>0 and v.Character:FindFirstChild'HumanoidRootPart' then
-                    dist = distance
-                    n_plr = v
-                end
-            end
-        end
-        local sp = Instance.new('SelectionBox',n_plr.Character.HumanoidRootPart)
-        sp.Name = 'SelectedPlayer'
-        sp.Adornee = n_plr.Character.HumanoidRootPart
-        tar = n_plr
-    elseif key == 'q' and tar and plr.Character then
-        for _,v in next,plr.Character:GetDescendants() do
-            if v:IsA'Tool' and v.Name ~= 'Kawaii Revolver' and not v:FindFirstChild'ClientCD' and v:FindFirstChild'DamageRemote' and v:FindFirstChild'Cooldown' and tar and tar.Character and tar.Character:FindFirstChildOfClass'Humanoid' then
-                AddCd(v,v.Cooldown.Value)
-                v.DamageRemote:FireServer(tar.Character:FindFirstChildOfClass'Humanoid')
-                if v:FindFirstChild'Attack' and plr.Character:FindFirstChildOfClass'Humanoid' then
-                    plr.Character:FindFirstChildOfClass'Humanoid':LoadAnimation(v.Attack):Play()
-                end
-                if v:FindFirstChild'Blade' then
-                    for _,x in next,v.Blade:GetChildren() do
-                        if x.Name == 'SwingSound' then
-                            x:Play()
-                            wait(0.12)
-                               elseif x.Name == 'HitSound' then
-                            x:Play()
-                        end
-                    end
-                end
-            elseif v:IsA'Tool' and v.Name == 'Kawaii Revolver' and not v:FindFirstChild'ClientCD' and v:FindFirstChild'ReplicateRemote' and v:FindFirstChild'Barrel' and v.Barrel:FindFirstChild'Attachment' and tar and tar.Character and tar.Character:FindFirstChild'HumanoidRootPart' then
-                v.Parent = plr.Character
-                AddCd(v,2)
-                rs:wait()
-                Shoot(v.Barrel.Attachment.WorldPosition,tar.Character.HumanoidRootPart.Position,v)
-                v.ReplicateRemote:FireServer(tar.Character.HumanoidRootPart.Position)
-            end
-        end
-    elseif key == 'c' and plr:FindFirstChild'Backpack' then
-        local guns = 0
-        for _,v in next,plr.Backpack:GetChildren() do
-            if guns<= 10 and plr.Character and plr.Character:FindFirstChild'Head' and v.Name == 'Kawaii Revolver' and not v:FindFirstChild'ClientCD' and v:FindFirstChild'ReplicateRemote' and v:FindFirstChild'Barrel' and v.Barrel:FindFirstChild'Attachment' then
-                guns = guns+1
-                AddCd(v,2)
-                v.Parent = plr.Character
-                Shoot(plr.Character.Head.Position,mouse.Hit.p,v)
-                v.ReplicateRemote:FireServer(mouse.Hit.p)
-                v.Parent = plr.Backpack
-            end
-        end
-    elseif key == 'v' then
-          function autoVoid()
-              for i,v in pairs(plr.Character:GetChildren()) do
-                   if v:IsA('Tool') then
-                repeat v.DamageRemote:FireServer(tar.Character:FindFirstChildOfClass'Humanoid')
-                wait(0.3)
-                until tar.Character.Ragdolled.Value == true
-          end
-          end
-          end
-          
-          autoVoid()
-          
-          
-          if tar.Character.Ragdolled.Value == true then
-          wait(0.8)
-          game.Players.LocalPlayer.Character.Humanoid.HipHeight = -1
-          if tar.Character.Humanoid.Health == 0 then
-              return
-          end
-          repeat plr.Character.HumanoidRootPart.CFrame = tar.Character.HumanoidRootPart.CFrame
-          wait(0.2)
-          plr.Character.PickupRemote:FireServer()
-          wait()
-          until tar.Character["Being Carried"].Value == true or tar.Character.Humanoid.Health <= 0
-          if tar.Character["Being Carried"].Value == true then
-          plr.Character.HumanoidRootPart.CFrame = CFrame.new(211.890457, -462.331085, 255.280075, 0.666543722, -0.0616444983, 0.742912769, 1.33772478e-08, 0.996575117, 0.0826925635, -0.745465934, -0.0551182032, 0.664260924)
-          game.Players.LocalPlayer.Character.Humanoid.HipHeight = 0
-          wait(0.2)
-          game.Players.LocalPlayer.Character.Humanoid.Health = '0'
-          end
-          end
-
-          elseif key == 't' then
-              plr.Character.HumanoidRootPart.CFrame = tar.Character.Head.CFrame
-          end
-
-if key == 'f' then
-    plr.Character:FindFirstChild("Throwing Knife"):FindFirstChild("RemoteEvent"):FireServer(tar.Character.HumanoidRootPart.Position)
-end
-end
-)
