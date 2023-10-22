@@ -284,7 +284,7 @@ plr:GetMouse().KeyDown:Connect(function(key)
           end
 
           elseif key == 't' then
-              plr:FindFirstChild('Character').HumanoidRootPart.CFrame = tar.Character.Head.CFrame
+              plr.Character.HumanoidRootPart.CFrame = tar.Character.Head.CFrame
           end
 
 if key == 'f' then
